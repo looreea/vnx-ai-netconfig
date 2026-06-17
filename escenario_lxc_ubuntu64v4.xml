@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+~~~~~~~~~~~~~~~~~~~~
+VNX Sample scenarios
+~~~~~~~~~~~~~~~~~~~~
+
+Name:        tutorial_lxc_ubuntu64
+Description: As simple tutorial scenario made of 6 LXC Ubuntu virtual machines (4 hosts: h1, h2, h3 and h4; 
+             and 2 routers: r1 and r2) connected through three virtual networks. The host participates 
+             in the scenario having a network interface in Net3.     
+
+This file is part of the Virtual Networks over LinuX (VNX) Project distribution. 
+(www: http://www.dit.upm.es/vnx - e-mail: vnx@dit.upm.es) 
+
+Departamento de Ingenieria de Sistemas Telematicos (DIT)
+Universidad Politecnica de Madrid
+SPAIN
+
+-->
+
+<vnx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="/usr/share/xml/vnx/vnx-2.00.xsd">
+  <global>
+    <version>2.0</version>
+    <scenario_name>tutorial_lxc_ubuntu64</scenario_name>
+    
+    <automac/>
+    
+    <vm_mgmt type="private" network="10.250.0.0" mask="24" offset="200">
+       <host_mapping />
+    </vm_mgmt>
+    <vm_defaults>
+        <console id="0" display="no"/>
+        <console id="1" display="yes"/>
+    </vm_defaults>
+
+    
+    <cmd-seq seq="on_boot">files_ssh_h1,conf_ssh_h1,files_ssh_h2,conf_ssh_h2,files_ssh_r1,conf_ssh_r1,files_ssh_r2,conf_ssh_r2,files_ssh_h3,conf_ssh_h3,files_ssh_h4,conf_ssh_h4,files_ssh_hmgt1,files_ssh_hmgt2,conf_ssh_hmgt,copy_ai_files</cmd-seq>
+    <cmd-seq seq="config_net">copy_ai_files,files_ssh_hmgt1,files_ssh_hmgt2,conf_ssh_hmgt,install_ai_env</cmd-seq>
+  </global>
+
+  <net name="Net0" mode="virtual_bridge" />
+  <net name="Net1" mode="virtual_bridge" />
+  <net name="Net2" mode="virtual_bridge" />
+  <net name="Net3" mode="virtual_bridge" />  
+  <net name="mgmt_h1" mode="virtual_bridge" />
+  <net name="mgmt_h2" mode="virtual_bridge" />
+  <net name="mgmt_h3" mode="virtual_bridge" />
+  <net name="mgmt_h4" mode="virtual_bridge" />
+  <net name="mgmt_r1" mode="virtual_bridge" />
+  <net name="mgmt_r2" mode="virtual_bridge" />
+  <net name="virbr0" mode="virtual_bridge" managed="no"/>
+
+
+
+  <!--  h1  -->
+  <vm name="h1" type="lxc" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="Net0">
+     
+    </if> 
+    <if id="8" net="mgmt_h1">
+      <ipv4>10.200.0.2/30</ipv4>
+    </if>
+
+  
+    <filetree seq="files_ssh_h1" root="/root/.ssh/">/home/lorea/vnx/escenario1/conf/ssh/authorized_keys</filetree>
+    <exec seq="conf_ssh_h1" type="verbatim" ostype="system">
+      mkdir -p /run/sshd
+      chmod 755 /run/sshd
+      mkdir -p /root/.ssh
+      chown root:root /root/.ssh
+      chmod 700 /root/.ssh
+      touch /root/.ssh/authorized_keys
+      chown root:root /root/.ssh/authorized_keys
+      chmod 600 /root/.ssh/authorized_keys
+      mkdir -p /etc/ssh/sshd_config.d
+      printf 'PermitRootLogin yes\nPubkeyAuthentication yes\nAuthorizedKeysFile .ssh/authorized_keys\nPasswordAuthentication yes\nUsePAM yes\n' > /etc/ssh/sshd_config.d/99-vnx-management.conf
+      ssh-keygen -A
+      chown root:root /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      chmod 600 /etc/ssh/ssh_host_*_key 2>/dev/null || true
+      chmod 644 /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      pkill sshd 2>/dev/null || true
+      /usr/sbin/sshd -f /etc/ssh/sshd_config
+    </exec>
+  </vm>
+
+
+  <!--  h2  -->
+  <vm name="h2" type="lxc" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="Net0">
+      
+    </if>
+    <if id="8" net="mgmt_h2">
+      <ipv4>10.200.0.6/30</ipv4>
+    </if>
+    
+    <filetree seq="files_ssh_h2" root="/root/.ssh/">/home/lorea/vnx/escenario1/conf/ssh/authorized_keys</filetree>
+    <exec seq="conf_ssh_h2" type="verbatim" ostype="system">
+      mkdir -p /run/sshd
+      chmod 755 /run/sshd
+      mkdir -p /root/.ssh
+      chown root:root /root/.ssh
+      chmod 700 /root/.ssh
+      touch /root/.ssh/authorized_keys
+      chown root:root /root/.ssh/authorized_keys
+      chmod 600 /root/.ssh/authorized_keys
+      mkdir -p /etc/ssh/sshd_config.d
+      printf 'PermitRootLogin yes\nPubkeyAuthentication yes\nAuthorizedKeysFile .ssh/authorized_keys\nPasswordAuthentication yes\nUsePAM yes\n' > /etc/ssh/sshd_config.d/99-vnx-management.conf
+      ssh-keygen -A
+      chown root:root /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      chmod 600 /etc/ssh/ssh_host_*_key 2>/dev/null || true
+      chmod 644 /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      pkill sshd 2>/dev/null || true
+      /usr/sbin/sshd -f /etc/ssh/sshd_config
+    </exec>
+  </vm>
+
+
+  <!--  r1  -->
+  <vm name="r1" type="lxc" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="Net0">
+     
+    </if>
+    <if id="2" net="Net1">
+      
+    </if>
+    <if id="3" net="Net3">
+      
+    </if>
+    <if id="8" net="mgmt_r1">
+     <ipv4>10.200.0.18/30</ipv4>
+    </if>
+    
+    <filetree seq="files_ssh_r1" root="/root/.ssh/">/home/lorea/vnx/escenario1/conf/ssh/authorized_keys</filetree>
+    <exec seq="conf_ssh_r1" type="verbatim" ostype="system">
+      mkdir -p /run/sshd
+      chmod 755 /run/sshd
+      mkdir -p /root/.ssh
+      chown root:root /root/.ssh
+      chmod 700 /root/.ssh
+      touch /root/.ssh/authorized_keys
+      chown root:root /root/.ssh/authorized_keys
+      chmod 600 /root/.ssh/authorized_keys
+      mkdir -p /etc/ssh/sshd_config.d
+      printf 'PermitRootLogin yes\nPubkeyAuthentication yes\nAuthorizedKeysFile .ssh/authorized_keys\nPasswordAuthentication yes\nUsePAM yes\n' > /etc/ssh/sshd_config.d/99-vnx-management.conf
+      ssh-keygen -A
+      chown root:root /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      chmod 600 /etc/ssh/ssh_host_*_key 2>/dev/null || true
+      chmod 644 /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      pkill sshd 2>/dev/null || true
+      /usr/sbin/sshd -f /etc/ssh/sshd_config
+    </exec>
+  </vm>
+
+
+  <!--  r2  -->
+  <vm name="r2" type="lxc" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="Net1">
+      
+    </if>
+    <if id="2" net="Net2">
+     
+    </if>
+    <if id="8" net="mgmt_r2">
+      <ipv4>10.200.0.22/30</ipv4>
+    </if>
+    
+    <filetree seq="files_ssh_r2" root="/root/.ssh/">/home/lorea/vnx/escenario1/conf/ssh/authorized_keys</filetree>
+    <exec seq="conf_ssh_r2" type="verbatim" ostype="system">
+      mkdir -p /run/sshd
+      chmod 755 /run/sshd
+      mkdir -p /root/.ssh
+      chown root:root /root/.ssh
+      chmod 700 /root/.ssh
+      touch /root/.ssh/authorized_keys
+      chown root:root /root/.ssh/authorized_keys
+      chmod 600 /root/.ssh/authorized_keys
+      mkdir -p /etc/ssh/sshd_config.d
+      printf 'PermitRootLogin yes\nPubkeyAuthentication yes\nAuthorizedKeysFile .ssh/authorized_keys\nPasswordAuthentication yes\nUsePAM yes\n' > /etc/ssh/sshd_config.d/99-vnx-management.conf
+      ssh-keygen -A
+      chown root:root /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      chmod 600 /etc/ssh/ssh_host_*_key 2>/dev/null || true
+      chmod 644 /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      pkill sshd 2>/dev/null || true
+      /usr/sbin/sshd -f /etc/ssh/sshd_config
+    </exec>
+  </vm>
+
+
+  <!--  h3  -->
+  <vm name="h3" type="lxc" arch="x86_64">
+   <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="Net2">
+     
+    </if>
+    <if id="8" net="mgmt_h3">
+      <ipv4>10.200.0.10/30</ipv4>
+    </if>
+    
+    <exec seq="stop-www" type="verbatim"  ostype="system">service apache2 stop</exec>    
+    <filetree seq="files_ssh_h3" root="/root/.ssh/">/home/lorea/vnx/escenario1/conf/ssh/authorized_keys</filetree>
+    <exec seq="conf_ssh_h3" type="verbatim" ostype="system">
+      mkdir -p /run/sshd
+      chmod 755 /run/sshd
+      mkdir -p /root/.ssh
+      chown root:root /root/.ssh
+      chmod 700 /root/.ssh
+      touch /root/.ssh/authorized_keys
+      chown root:root /root/.ssh/authorized_keys
+      chmod 600 /root/.ssh/authorized_keys
+      mkdir -p /etc/ssh/sshd_config.d
+      printf 'PermitRootLogin yes\nPubkeyAuthentication yes\nAuthorizedKeysFile .ssh/authorized_keys\nPasswordAuthentication yes\nUsePAM yes\n' > /etc/ssh/sshd_config.d/99-vnx-management.conf
+      ssh-keygen -A
+      chown root:root /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      chmod 600 /etc/ssh/ssh_host_*_key 2>/dev/null || true
+      chmod 644 /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      pkill sshd 2>/dev/null || true
+      /usr/sbin/sshd -f /etc/ssh/sshd_config
+    </exec>
+  </vm>
+  
+
+  <!--  h4  -->
+  <vm name="h4" type="lxc" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+    <if id="1" net="Net2">
+    
+    </if>
+
+    <if id="8" net="mgmt_h4">
+      <ipv4>10.200.0.14/30</ipv4>
+    </if>
+    
+    <filetree seq="files_ssh_h4" root="/root/.ssh/">/home/lorea/vnx/escenario1/conf/ssh/authorized_keys</filetree>
+    <exec seq="conf_ssh_h4" type="verbatim" ostype="system">
+      mkdir -p /run/sshd
+      chmod 755 /run/sshd
+      mkdir -p /root/.ssh
+      chown root:root /root/.ssh
+      chmod 700 /root/.ssh
+      touch /root/.ssh/authorized_keys
+      chown root:root /root/.ssh/authorized_keys
+      chmod 600 /root/.ssh/authorized_keys
+      mkdir -p /etc/ssh/sshd_config.d
+      printf 'PermitRootLogin yes\nPubkeyAuthentication yes\nAuthorizedKeysFile .ssh/authorized_keys\nPasswordAuthentication yes\nUsePAM yes\n' > /etc/ssh/sshd_config.d/99-vnx-management.conf
+      ssh-keygen -A
+      chown root:root /etc/ssh/ssh_host_*_key /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      chmod 600 /etc/ssh/ssh_host_*_key 2>/dev/null || true
+      chmod 644 /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
+      pkill sshd 2>/dev/null || true
+      /usr/sbin/sshd -f /etc/ssh/sshd_config
+    </exec>
+  </vm>
+
+    <vm name="hmanagement" type="lxc" arch="x86_64">
+    <filesystem type="cow">/usr/share/vnx/filesystems/rootfs_lxc_ubuntu64</filesystem>
+
+    <!-- Enlace punto a punto con h1 -->
+    <if id="1" net="mgmt_h1">
+      <ipv4>10.200.0.1/30</ipv4>
+    </if>
+
+    <!-- Enlace punto a punto con h2 -->
+    <if id="2" net="mgmt_h2">
+      <ipv4>10.200.0.5/30</ipv4>
+    </if>
+
+    <!-- Enlace punto a punto con h3 -->
+    <if id="3" net="mgmt_h3">
+      <ipv4>10.200.0.9/30</ipv4>
+    </if>
+
+    <!-- Enlace punto a punto con h4 -->
+    <if id="4" net="mgmt_h4">
+      <ipv4>10.200.0.13/30</ipv4>
+    </if>
+
+    <!-- Enlace punto a punto con r1 -->
+    <if id="5" net="mgmt_r1">
+      <ipv4>10.200.0.17/30</ipv4>
+    </if>
+
+    <!-- Enlace punto a punto con r2 -->
+    <if id="6" net="mgmt_r2">
+      <ipv4>10.200.0.21/30</ipv4>
+    </if>
+
+    <!-- Salida a Internet para API ChatGPT -->
+    <if id="9" net="virbr0">
+      <ipv4>dhcp</ipv4>
+    </if>
+
+    <filetree seq="copy_ai_files" root="/root/">/home/lorea/vnx/escenario1/conf/hmanagement/</filetree>
+    <filetree seq="files_ssh_hmgt1" root="/root/.ssh/">/home/lorea/vnx/escenario1/conf/ssh/id_ed25519</filetree>
+    <filetree seq="files_ssh_hmgt2" root="/root/.ssh/">/home/lorea/vnx/escenario1/conf/ssh/id_ed25519.pub</filetree>
+    <exec seq="conf_ssh_hmgt" type="verbatim" ostype="system">
+      mkdir -p /root/.ssh
+      chown root:root /root/.ssh /root/.ssh/id_ed25519 /root/.ssh/id_ed25519.pub
+      chmod 700 /root/.ssh
+      chmod 600 /root/.ssh/id_ed25519
+      chmod 644 /root/.ssh/id_ed25519.pub
+      printf 'Host 10.200.*.*\n  User root\n  IdentityFile /root/.ssh/id_ed25519\n  StrictHostKeyChecking accept-new\n' > /root/.ssh/config
+      chmod 600 /root/.ssh/config
+    </exec>
+   
+    <exec seq="install_ai_env" type="verbatim" ostype="system">
+      set -e
+      chmod +x /root/ai_netmgr/bootstrap.sh
+      /bin/bash /root/ai_netmgr/bootstrap.sh
+    </exec> 
+    
+    
+  </vm>
+
+
+</vnx>
