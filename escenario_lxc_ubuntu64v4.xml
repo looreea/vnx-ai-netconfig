@@ -38,7 +38,7 @@ SPAIN
 
     
     <cmd-seq seq="on_boot">files_ssh_h1,conf_ssh_h1,files_ssh_h2,conf_ssh_h2,files_ssh_r1,conf_ssh_r1,files_ssh_r2,conf_ssh_r2,files_ssh_h3,conf_ssh_h3,files_ssh_h4,conf_ssh_h4,files_ssh_hmgt1,files_ssh_hmgt2,conf_ssh_hmgt,copy_ai_files</cmd-seq>
-    <cmd-seq seq="config_net">copy_ai_files,files_ssh_hmgt1,files_ssh_hmgt2,conf_ssh_hmgt,install_ai_env</cmd-seq>
+    <cmd-seq seq="config_net">install_ai_env</cmd-seq>
   </global>
 
   <net name="Net0" mode="virtual_bridge" />
